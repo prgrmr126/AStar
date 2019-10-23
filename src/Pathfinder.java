@@ -33,24 +33,17 @@ public class Pathfinder {
 		this.found = false;
 		this.dead = false;
 
-		this.startNode.setH(this.startNode.getX() - this.endNode.getX(), this.startNode.getY() - this.endNode.getY());
+		this.startNode.calculateH(this.endNode);
 		this.startNode.calculateF();
 	}
-
+	
+	// Does one step of finding the path
 	public void find() {
 
 		// Gets node with the lowest f value
 
-		Node currentNode = this.openList.get(0);
-		int currentIndex = 0;
-
-		for (int i = 0; i < this.openList.size(); i++) {
-			Node thisNode = this.openList.get(i);
-			if (thisNode.getF() < currentNode.getF()) {
-				currentNode = thisNode;
-				currentIndex = i;
-			}
-		}
+		int currentIndex = this.getLowestF();
+		Node currentNode = this.openList.get(currentIndex);
 
 		// Moves the node to the closed list
 
@@ -60,21 +53,20 @@ public class Pathfinder {
 		// If the node is the end node then the path has been found!
 
 		if (currentNode.equals(this.endNode)) {
-			List<Node> route = new ArrayList<Node>();
-			Node current = currentNode;
-			while (current != null) {
-				route.add(current.getPos());
-				current = current.getParent();
-			}
-			Collections.reverse(route);
-			this.found = true;
-			this.foundList = route;
+			this.buildPath(currentNode);
 		}
 
-		// Possible changes for all eight directions
-
-		Node[] positions = new Node[] {new Node(0, -1), new Node(0, 1), new Node(-1, 0), new Node(1, 0),
-									   new Node(-1, -1), new Node(-1, 1), new Node(1, -1), new Node(1, 1)};
+		// Possible changes for all eight or four directions
+		
+		Node[] positions;
+		
+		if (Settings.diagonalAllowed == true) {
+			positions = new Node[] {new Node(0, -1), new Node(0, 1), new Node(-1, 0), new Node(1, 0),
+									new Node(-1, -1), new Node(-1, 1), new Node(1, -1), new Node(1, 1)};
+		}
+		else {
+			positions = new Node[] {new Node(0, -1), new Node(0, 1), new Node(-1, 0), new Node(1, 0)};
+		}
 
 
 		// Adds children to open list if they meet all requirements
@@ -83,52 +75,84 @@ public class Pathfinder {
 
 			Node child = new Node(currentNode, currentNode.getX() + changePos.getX(), currentNode.getY() + changePos.getY());
 
-			int xor = changePos.getX() ^ changePos.getY();
-
-			if (!(xor == changePos.getX() || xor == changePos.getY())) {
-				Node horPos = new Node(currentNode.getX(), currentNode.getY() + changePos.getY());
-				Node verPos = new Node(currentNode.getX() + changePos.getX(), currentNode.getY());
-
-				// Wall "gaps"
-				if (Pathfinder.nodeSearch(this.wallsList, horPos) && Pathfinder.nodeSearch(this.wallsList, verPos)) {
-					continue;
-				}
-				// Cutting around walls
-				else if (Pathfinder.nodeSearch(this.wallsList, horPos) || Pathfinder.nodeSearch(this.wallsList, verPos)) {
-					continue;
+			if (Settings.diagonalAllowed == true) {
+				int xor = changePos.getX() ^ changePos.getY();
+				
+				if (!(xor == changePos.getX() || xor == changePos.getY())) {
+					boolean horPosFound = Pathfinder.nodeSearch(this.wallsList, new Node(currentNode.getX(), currentNode.getY() + changePos.getY()));
+					boolean verPosFound = Pathfinder.nodeSearch(this.wallsList, new Node(currentNode.getX() + changePos.getX(), currentNode.getY()));
+	
+					// Cutting around walls and going through wall "gaps"
+					if (horPosFound || verPosFound) {
+						continue;
+					}
 				}
 			}
 
-			// Out of bounds, a wall, or in closed list
+			// Out of bounds
 			if ((child.getX() > this.maxNode.getX()) || (child.getX() < 0) || (child.getY() > this.maxNode.getY()) || (child.getY() < 0)) continue;
+			// Is a wall
 			else if (Pathfinder.nodeSearch(this.wallsList, child)) continue;
+			// Is in closed list already
 			else if (Pathfinder.nodeSearch(this.closedList, child)) continue;
 
 			// Node calculations
-			child.setG(currentNode);
-			child.setH(currentNode.getX() - endNode.getX(), currentNode.getY() - endNode.getY());
+			child.calculateG(currentNode);
+			child.calculateH(this.endNode);
 			child.calculateF();
 
-			boolean lowerGFound = false;
-
-			// Identical child with a lower g
-			for (Node openNode : this.openList) {
-				if (child.equals(openNode) && (child.getG() > openNode.getG())) {
-					lowerGFound = true;
-					break;
-				}
-			}
-
-			if (!lowerGFound) this.openList.add(child);
+			// If there no identical node with a lower G cost, add it!
+			if (!this.identicalLowerG(child)) this.openList.add(child);
 		}
 
-		// No open nodes mean not paths :(
+		// No open nodes mean no possible paths :(
 		if (this.openList.size() <= 0) {
 			this.dead = true;
 			this.found = true;
 		}
 	}
+	
+	// Creates path back to source
+	public void buildPath(Node finalNode) {
+		List<Node> path = new ArrayList<Node>();
+		Node current = finalNode;
 
+		while (current != null) {
+			path.add(new Node(current.getX(), current.getY()));
+			current = current.getParent();
+		}
+
+		Collections.reverse(path);
+		this.found = true;
+		this.foundList = path;
+	}
+	
+	// Returns the index of the the node with the lowest F cost in the open list
+	public int getLowestF() {
+		double lowestF = Integer.MAX_VALUE;
+		int currentIndex = 0;
+		for (int i = 0; i < this.openList.size(); i++) {
+			Node thisNode = this.openList.get(i);
+			if (thisNode.getF() < lowestF) {
+				lowestF = thisNode.getF();
+				currentIndex = i;
+			}
+		}
+
+		return(currentIndex);
+	}
+
+	// Returns if there is a identical in the open list with a lower G cost
+	public boolean identicalLowerG(Node child) {
+		for (Node openNode : this.openList) {
+			if (child.equals(openNode) && (openNode.getG() < child.getG())) {
+				return(true);
+			}
+		}
+
+		return(false);
+	}
+	
 	public List<Node> getOpenList() {
 		return openList;
 	}

@@ -25,8 +25,12 @@ public class Node {
 		this.y = y;
 	}
 	
-	public Node getPos() {
-		return(new Node(this.x, this.y));
+	public int getX() {
+		return(this.x);
+	}
+	
+	public int getY() {
+		return(this.y);
 	}
 	
 	public Node getParent() {
@@ -45,41 +49,55 @@ public class Node {
 		return(this.f);
 	}
 
-	public void setG(Node parent) {
-		int diffX = this.x - parent.getX();
-		int diffY = this.y - parent.getY();
+	public void calculateG(Node parent) {
 		
-		int xor = diffX ^ diffY;
-		
-		if (xor == diffX || xor == diffY) {
-			// Straight, left, right, backwards have a g cost of 1
-			this.g = parent.getG() + 1;
+		if (Settings.diagonalAllowed) {
+			int diffX = this.x - parent.getX();
+			int diffY = this.y - parent.getY();
+			
+			int xor = diffX ^ diffY;
+			
+			if (xor == diffX || xor == diffY) {
+				// Straight, left, right, backwards have a g cost of 1
+				this.g = parent.getG() + 1;
+			}
+			else {
+				// Diagonals have g cost of ≈ 1.4142 because of Pythagorean's theorem.
+				// Initialized in Settings class to save time of calculation square root of 2
+				this.g = parent.getG() + Settings.diagonalCost;
+			}
 		}
 		else {
-			// Diagonals have g cost of ≈ 1.4142 because of Pythagorean's theorem.
-			// Initialized in Settings class to save time of calculation square root of 2
-			this.g = parent.getG() + Settings.diagonalCost;
+			this.g = parent.getG() + 1;
 		}
 	}
 	
-	public void setH(int xDiff, int yDiff) {
+	public void calculateH(Node endNode) {
+		
+		int xDiff = Math.abs(this.x - endNode.getX());
+		int yDiff = Math.abs(this.y - endNode.getY());
+		
 		if ((xDiff == 0) && (yDiff == 0)) {
 			this.h = 0;
 		}
 		else if (xDiff == 0) {
-			this.h = Math.abs(yDiff);
+			this.h = yDiff;
 		}
 		else if (yDiff == 0) {
-			this.h = Math.abs(xDiff);
+			this.h = xDiff;
 		}
-		else {
-			// Euclidean heuristic
+		else if (Settings.diagonalAllowed == true){
+			// Euclidean heuristic (pretty slow but accurate)
 			//this.h = (double) (Math.sqrt((xDiff * xDiff) + (yDiff * yDiff)));
 			
 			// Diagonal heuristic
-			int dx = Math.abs(xDiff);
-			int dy = Math.abs(yDiff);
-			this.h = (dx + dy) + (Settings.diagonalCost - 2 ) * Math.min(dx, dy);
+			//int dx = Math.abs(xDiff);
+			//int dy = Math.abs(yDiff);
+			this.h = (xDiff + yDiff) + (Settings.diagonalCost - 2 ) * Math.min(xDiff, yDiff);
+		}
+		else {
+			// Manhattan heuristic
+			this.h = xDiff + yDiff;
 		}
 		
 		this.h *= Settings.heuristicWeighting;
@@ -87,14 +105,6 @@ public class Node {
 
 	public void calculateF() {
 		this.f = this.h + this.g;
-	}
-	
-	public int getX() {
-		return(this.x);
-	}
-	
-	public int getY() {
-		return(this.y);
 	}
 	
 	public boolean equals(Node node) {
