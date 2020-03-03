@@ -55,29 +55,45 @@ public class Pathfinder {
 
 		// Possible changes for all eight or four directions
 
-		Node[] positions;
+		Node[] directions;
 
 		if (Settings.diagonalAllowed == true) {
-			positions = new Node[] {new Node(0, -1), new Node(0, 1), new Node(-1, 0), new Node(1, 0),
-					new Node(-1, -1), new Node(-1, 1), new Node(1, -1), new Node(1, 1)};
+			int i = 0;
+			directions = new Node[8];
+			
+			for (int a = -1; a <= 1; a++) {
+				for (int b = -1; b <= 1; b++) {
+					if (a == 0 && b == 0) continue;
+					directions[i] = new Node(a, b);
+					i++;
+				}
+			}
 		}
 		else {
-			positions = new Node[] {new Node(0, -1), new Node(0, 1), new Node(-1, 0), new Node(1, 0)};
+			int i = 0;
+			directions = new Node[4];
+			
+			for (int a = -1; a <= 1; a++) {
+				for (int b = -1; b <= 1; b++) {
+					if (Math.abs(a + b) != 1) continue;
+					directions[i] = new Node(a, b);
+					i++;
+				}
+			}
 		}
 
 
 		// Adds children to open list if they meet all requirements
 
-		for (Node changePos : positions) {
-
-			Node child = new Node(currentNode, currentNode.getX() + changePos.getX(), currentNode.getY() + changePos.getY());
+		for (Node direction : directions) {
+			Node child = new Node(currentNode, currentNode.getX() + direction.getX(), currentNode.getY() + direction.getY());
 
 			if (Settings.diagonalAllowed == true) {
-				int xor = changePos.getX() ^ changePos.getY();
+				int xor = direction.getX() ^ direction.getY();
 
-				if (!(xor == changePos.getX() || xor == changePos.getY())) {
-					boolean horPosFound = Pathfinder.nodeSearch(wallsList, new Node(currentNode.getX(), currentNode.getY() + changePos.getY()));
-					boolean verPosFound = Pathfinder.nodeSearch(wallsList, new Node(currentNode.getX() + changePos.getX(), currentNode.getY()));
+				if (!(xor == direction.getX() || xor == direction.getY())) {
+					boolean horPosFound = Pathfinder.nodeSearch(wallsList, new Node(currentNode.getX(), currentNode.getY() + direction.getY()));
+					boolean verPosFound = Pathfinder.nodeSearch(wallsList, new Node(currentNode.getX() + direction.getX(), currentNode.getY()));
 
 					// Cutting around walls and going through wall "gaps"
 					if (horPosFound || verPosFound) {
