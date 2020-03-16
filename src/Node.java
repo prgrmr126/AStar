@@ -23,27 +23,27 @@ public class Node {
 	}
 
 	public int getX() {
-		return(x);
+		return x;
 	}
 
 	public int getY() {
-		return(y);
+		return y;
 	}
 
 	public Node getParent() {
-		return(parent);
+		return parent;
 	}
 
 	public double getG() {
-		return(g);
+		return g;
 	}
 
 	public double getH() {
-		return(h);
+		return h;
 	}
 
 	public double getF() {
-		return(f);
+		return f;
 	}
 
 	public void calculateG(Node parent) {
@@ -83,9 +83,9 @@ public class Node {
 		else if (yDiff == 0) {
 			h = xDiff;
 		}
-		else if (Settings.diagonalAllowed == true){
+		else if (Settings.diagonalAllowed == true) {
 			// Diagonal heuristic
-			h = (xDiff + yDiff) + (Settings.diagonalCost - 2 ) * Math.min(xDiff, yDiff);
+			h = (xDiff + yDiff) + (Settings.diagonalCost - 2) * Math.min(xDiff, yDiff);
 		}
 		else {
 			// Manhattan heuristic
@@ -99,9 +99,14 @@ public class Node {
 		f = h + g;
 	}
 
-	public boolean equals(Node node) {
-		if (node == null) return false;
-		return ((x == node.getX()) && (y == node.getY()));
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof Node) {
+			Node node = (Node) obj;
+			return x == node.getX() && y == node.getY();
+		}
+		else {
+			return false;
+		}
 	}
-
 }

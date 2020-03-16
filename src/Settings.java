@@ -12,16 +12,18 @@ public class Settings {
 		try {
 			FileInputStream fis = new FileInputStream("config.properties");
 			config.load(fis);
-		} catch (FileNotFoundException e) {
-			//e.printStackTrace();
-		} catch (IOException e) {
-			//e.printStackTrace();
+		}
+		catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
 	public final static int nodeSize = Integer.parseInt(config.getProperty("nodeSize"));
 
-	public final static int  initialWidth = Integer.parseInt(config.getProperty("initialWidth"));
+	public final static int initialWidth = Integer.parseInt(config.getProperty("initialWidth"));
 	public final static int initialHeight = Integer.parseInt(config.getProperty("initialHeight"));
 
 	public final static int timerDelay = Integer.parseInt(config.getProperty("timerDelay"));

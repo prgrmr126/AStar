@@ -45,7 +45,7 @@ public class Visual extends JPanel implements KeyListener, MouseListener, MouseM
 		closedList = new ArrayList<Node>();
 
 		foundList = new ArrayList<Node>();
-		wallsList =  new ArrayList<Node>();
+		wallsList = new ArrayList<Node>();
 
 		// Set up
 
@@ -74,8 +74,7 @@ public class Visual extends JPanel implements KeyListener, MouseListener, MouseM
 		timer = new Timer(Settings.timerDelay, this);
 	}
 
-
-	//Run immediately causes an immediate finding of the path without showing steps
+	// Run immediately causes an immediate finding of the path without showing steps
 	public void runImmediately() {
 
 		System.out.println("STATUS: FINDING");
@@ -88,19 +87,17 @@ public class Visual extends JPanel implements KeyListener, MouseListener, MouseM
 			int maxWidth;
 			int maxHeight;
 
-			if (getWidth() % Settings.nodeSize == 0) maxWidth = (getWidth() - nodeSize) / nodeSize;
-			else maxWidth = ((getWidth() - nodeSize) / nodeSize) + 1;
+			maxWidth = getWidth() % Settings.nodeSize == 0 ? (getWidth() - nodeSize) / nodeSize
+					: ((getWidth() - nodeSize) / nodeSize) + 1;
 
-			if (getHeight() % Settings.nodeSize == 0) maxHeight = (getHeight() - nodeSize) / nodeSize;
-			else maxHeight = ((getHeight() - nodeSize) / nodeSize) + 1;
+			maxHeight = getHeight() % Settings.nodeSize == 0 ? (getHeight() - nodeSize) / nodeSize
+					: ((getHeight() - nodeSize) / nodeSize) + 1;
 
 			max = new Node(maxWidth, maxHeight);
-
 
 			finder = new Pathfinder(startNode, endNode, wallsList, max);
 		}
 		else {
-			System.out.println("STATUS: START AND END NODE REQUIRED TO RUN");
 			return;
 		}
 
@@ -113,7 +110,6 @@ public class Visual extends JPanel implements KeyListener, MouseListener, MouseM
 		complete();
 	}
 
-
 	// Run will initialize finder and start swing timer.
 	public void run() {
 
@@ -121,31 +117,25 @@ public class Visual extends JPanel implements KeyListener, MouseListener, MouseM
 
 		finding = true;
 
-		if ((startNode != null) && (endNode != null)) {
+		Node max;
+		int maxWidth;
+		int maxHeight;
 
-			Node max;
-			int maxWidth;
-			int maxHeight;
+		maxWidth = getWidth() % Settings.nodeSize == 0 ? (getWidth() - nodeSize) / nodeSize
+				: ((getWidth() - nodeSize) / nodeSize) + 1;
 
-			if (getWidth() % Settings.nodeSize == 0) maxWidth = (getWidth() - nodeSize) / nodeSize;
-			else maxWidth = ((getWidth() - nodeSize) / nodeSize) + 1;
+		maxHeight = getHeight() % Settings.nodeSize == 0 ? (getHeight() - nodeSize) / nodeSize
+				: ((getHeight() - nodeSize) / nodeSize) + 1;
 
-			if (getHeight() % Settings.nodeSize == 0) maxHeight = (getHeight() - nodeSize) / nodeSize;
-			else maxHeight = ((getHeight() - nodeSize) / nodeSize) + 1;
+		max = new Node(maxWidth, maxHeight);
 
-			max = new Node(maxWidth, maxHeight);
+		finder = new Pathfinder(startNode, endNode, wallsList, max);
 
-			finder = new Pathfinder(startNode, endNode, wallsList, max);
-
-			timer.start();
-		}
-		else {
-			System.out.println("STATUS: START AND END NODE REQUIRED TO RUN");
-			return;
-		}
+		timer.start();
 	}
 
-	// Action performed triggered every time the swing timer is set off and Pathfinder's find method is called
+	// Action performed triggered every time the swing timer is set off and
+	// Pathfinder's find method is called
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (!finder.isFound() && !finder.isDead() && finding) {
@@ -178,36 +168,35 @@ public class Visual extends JPanel implements KeyListener, MouseListener, MouseM
 		repaint();
 	}
 
-
 	public void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
 		// Paints grid
 		g.setColor(Color.LIGHT_GRAY);
 
-		for ( int x = 0; x < getHeight(); x += nodeSize ) {
-			for ( int y = 0; y < getWidth(); y += nodeSize ) {
-				g.drawRect( y, x, nodeSize, nodeSize );
+		for (int x = 0; x < getHeight(); x += nodeSize) {
+			for (int y = 0; y < getWidth(); y += nodeSize) {
+				g.drawRect(y, x, nodeSize, nodeSize);
 			}
 		}
 
 		// Paints all nodes in open list as orange
 		g.setColor(Color.ORANGE);
 		for (Node open : openedList) {
-			g.fillRect( open.getX() * nodeSize + 1, open.getY() * nodeSize + 1, nodeSize - 1, nodeSize - 1);
+			g.fillRect(open.getX() * nodeSize + 1, open.getY() * nodeSize + 1, nodeSize - 1, nodeSize - 1);
 		}
 
 		// Paints all nodes in closed list as red
 		g.setColor(Color.RED);
 		for (Node closed : closedList) {
-			g.fillRect( closed.getX() * nodeSize + 1, closed.getY() * nodeSize + 1, nodeSize - 1, nodeSize - 1);
+			g.fillRect(closed.getX() * nodeSize + 1, closed.getY() * nodeSize + 1, nodeSize - 1, nodeSize - 1);
 		}
 
 		// Paints the found path in the found list as cyan ONCE FOUND
 		g.setColor(Color.CYAN);
 		if (foundList != null) {
 			for (Node pos : foundList) {
-				g.fillRect( pos.getX() * nodeSize + 1, pos.getY() * nodeSize + 1, nodeSize - 1, nodeSize - 1);
+				g.fillRect(pos.getX() * nodeSize + 1, pos.getY() * nodeSize + 1, nodeSize - 1, nodeSize - 1);
 			}
 		}
 
@@ -215,28 +204,30 @@ public class Visual extends JPanel implements KeyListener, MouseListener, MouseM
 		if (wallsList != null) {
 			g.setColor(Color.BLACK);
 			for (Node wall : wallsList) {
-				g.fillRect( wall.getX() * nodeSize + 1, wall.getY() * nodeSize + 1, nodeSize - 1, nodeSize - 1);
+				g.fillRect(wall.getX() * nodeSize + 1, wall.getY() * nodeSize + 1, nodeSize - 1, nodeSize - 1);
 			}
 		}
 
 		// Paints the start Node as green
 		if (startNode != null) {
 			g.setColor(Color.GREEN);
-			g.fillRect( startNode.getX() * nodeSize + 1, startNode.getY() * nodeSize + 1, nodeSize - 1, nodeSize - 1);
+			g.fillRect(startNode.getX() * nodeSize + 1, startNode.getY() * nodeSize + 1, nodeSize - 1, nodeSize - 1);
 
 		}
 
 		// Paints the end Node as blue
 		if (endNode != null) {
 			g.setColor(Color.BLUE);
-			g.fillRect( endNode.getX() * nodeSize + 1, endNode.getY() * nodeSize + 1, nodeSize - 1, nodeSize - 1);
+			g.fillRect(endNode.getX() * nodeSize + 1, endNode.getY() * nodeSize + 1, nodeSize - 1, nodeSize - 1);
 
 		}
 	}
 
 	// Handles all incoming mouse movements
 	public void eventHandler(MouseEvent e) {
-		if (finding) return;
+		if (finding) {
+			return;
+		}
 
 		Node itemPos = new Node(e.getX() / nodeSize, e.getY() / nodeSize); // Maps pixel value to actual value
 
@@ -297,7 +288,6 @@ public class Visual extends JPanel implements KeyListener, MouseListener, MouseM
 		}
 	}
 
-
 	@Override
 	public void mouseClicked(MouseEvent e) {
 		eventHandler(e);
@@ -316,8 +306,16 @@ public class Visual extends JPanel implements KeyListener, MouseListener, MouseM
 
 		// Space triggers the path finding
 		if (currentKey == ' ') {
-			if (Settings.immediateRun) runImmediately();
-			else run();
+			if (startNode == null || endNode == null) {
+				System.out.println("STATUS: START AND END NODE REQUIRED TO RUN");
+				return;
+			}
+			if (Settings.immediateRun) {
+				runImmediately();
+			}
+			else {
+				run();
+			}
 		}
 		// Force quits program
 		else if (currentKey == 'q') {
@@ -325,13 +323,18 @@ public class Visual extends JPanel implements KeyListener, MouseListener, MouseM
 		}
 		// Clears the screen of all Nodes, nodes, etc.
 		else if (currentKey == 'c') {
-			if (finding) finding = false;
+			if (finding)
+				finding = false;
 
-			if (!(openedList == null)) openedList.clear();
-			if (!(closedList == null)) closedList.clear();
+			if (!(openedList == null))
+				openedList.clear();
+			if (!(closedList == null))
+				closedList.clear();
 
-			if (!(wallsList == null)) wallsList.clear();
-			if (!(foundList == null)) foundList.clear();
+			if (!(wallsList == null))
+				wallsList.clear();
+			if (!(foundList == null))
+				foundList.clear();
 
 			startNode = null;
 			endNode = null;
@@ -340,13 +343,18 @@ public class Visual extends JPanel implements KeyListener, MouseListener, MouseM
 
 			repaint();
 		}
-		// Resets the screen by clearing open, closed, found, keeps walls and start and end Nodes.
+		// Resets the screen by clearing open, closed, found, keeps walls and start and
+		// end Nodes.
 		else if (currentKey == 'r') {
-			if (finding) finding = false;
+			if (finding)
+				finding = false;
 
-			if (!(openedList == null)) openedList.clear();
-			if (!(closedList == null)) closedList.clear();
-			if (!(foundList == null)) foundList.clear();
+			if (!(openedList == null))
+				openedList.clear();
+			if (!(closedList == null))
+				closedList.clear();
+			if (!(foundList == null))
+				foundList.clear();
 
 			System.out.println("STATUS: RESET");
 
@@ -360,14 +368,30 @@ public class Visual extends JPanel implements KeyListener, MouseListener, MouseM
 		currentKey = (char) 0;
 	}
 
-
 	// Required implement methods
-	@Override public void keyTyped(KeyEvent e) {}
-	@Override public void mouseReleased(MouseEvent e) {}
-	@Override public void mouseEntered(MouseEvent e) {}
-	@Override public void mouseExited(MouseEvent e) {}
-	@Override public void mouseMoved(MouseEvent e) {}
-	@Override public void mousePressed(MouseEvent e) {}
+	@Override
+	public void keyTyped(KeyEvent e) {
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent e) {
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+	}
 
 	public static void main(String[] args) {
 		new Visual();

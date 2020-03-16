@@ -57,13 +57,15 @@ public class Pathfinder {
 
 		Node[] directions;
 
-		if (Settings.diagonalAllowed == true) {
+		if (Settings.diagonalAllowed) {
 			int i = 0;
 			directions = new Node[8];
-			
+
 			for (int a = -1; a <= 1; a++) {
 				for (int b = -1; b <= 1; b++) {
-					if (a == 0 && b == 0) continue;
+					if (a == 0 && b == 0) {
+						continue;
+					}
 					directions[i] = new Node(a, b);
 					i++;
 				}
@@ -72,28 +74,33 @@ public class Pathfinder {
 		else {
 			int i = 0;
 			directions = new Node[4];
-			
+
 			for (int a = -1; a <= 1; a++) {
 				for (int b = -1; b <= 1; b++) {
-					if (Math.abs(a + b) != 1) continue;
+					if (Math.abs(a + b) != 1) {
+						continue;
+					}
+					System.out.println(a + "  " + b);
 					directions[i] = new Node(a, b);
 					i++;
 				}
 			}
 		}
 
-
 		// Adds children to open list if they meet all requirements
 
 		for (Node direction : directions) {
-			Node child = new Node(currentNode, currentNode.getX() + direction.getX(), currentNode.getY() + direction.getY());
+			Node child = new Node(currentNode, currentNode.getX() + direction.getX(),
+					currentNode.getY() + direction.getY());
 
 			if (Settings.diagonalAllowed == true) {
 				int xor = direction.getX() ^ direction.getY();
 
 				if (!(xor == direction.getX() || xor == direction.getY())) {
-					boolean horPosFound = Pathfinder.nodeSearch(wallsList, new Node(currentNode.getX(), currentNode.getY() + direction.getY()));
-					boolean verPosFound = Pathfinder.nodeSearch(wallsList, new Node(currentNode.getX() + direction.getX(), currentNode.getY()));
+					boolean horPosFound = Pathfinder.nodeSearch(wallsList,
+							new Node(currentNode.getX(), currentNode.getY() + direction.getY()));
+					boolean verPosFound = Pathfinder.nodeSearch(wallsList,
+							new Node(currentNode.getX() + direction.getX(), currentNode.getY()));
 
 					// Cutting around walls and going through wall "gaps"
 					if (horPosFound || verPosFound) {
@@ -103,11 +110,18 @@ public class Pathfinder {
 			}
 
 			// Out of bounds
-			if ((child.getX() > maxNode.getX()) || (child.getX() < 0) || (child.getY() > maxNode.getY()) || (child.getY() < 0)) continue;
+			if ((child.getX() > maxNode.getX()) || (child.getX() < 0) || (child.getY() > maxNode.getY())
+					|| (child.getY() < 0)) {
+				continue;
+			}
 			// Is a wall
-			else if (Pathfinder.nodeSearch(wallsList, child)) continue;
+			else if (Pathfinder.nodeSearch(wallsList, child)) {
+				continue;
+			}
 			// Is in closed list already
-			else if (Pathfinder.nodeSearch(closedList, child)) continue;
+			else if (Pathfinder.nodeSearch(closedList, child)) {
+				continue;
+			}
 
 			// Node calculations
 			child.calculateG(currentNode);
@@ -115,7 +129,9 @@ public class Pathfinder {
 			child.calculateF();
 
 			// If there no identical node with a lower G cost, add it!
-			if (!identicalLowerG(child)) openList.add(child);
+			if (!identicalLowerG(child)) {
+				openList.add(child);
+			}
 		}
 
 		// No open nodes mean no possible paths :(
@@ -152,7 +168,7 @@ public class Pathfinder {
 			}
 		}
 
-		return(currentIndex);
+		return currentIndex;
 	}
 
 	// Returns if there is a identical in the open list with a lower G cost
@@ -164,45 +180,53 @@ public class Pathfinder {
 			Node openNode = openList.get(i);
 			if (child.equals(openNode)) {
 
-				if ((openNode.getG() <= child.getG())) return(true);
+				if ((openNode.getG() <= child.getG())) {
+					return true;
+				}
 				else if ((openNode.getG() > child.getG())) {
 					temp = i;
 					breakNow = true;
 				}
 			}
 
-			if (breakNow) break;
+			if (breakNow) {
+				break;
+			}
 		}
 
-		if (temp != -1) openList.remove(temp);
+		if (temp != -1) {
+			openList.remove(temp);
+		}
 
-		return(false);
+		return false;
 	}
 
 	public List<Node> getOpenList() {
-		return(openList);
+		return openList;
 	}
 
 	public List<Node> getClosedList() {
-		return(closedList);
+		return closedList;
 	}
 
 	public List<Node> getPath() {
-		return(foundList);
+		return foundList;
 	}
 
 	public boolean isFound() {
-		return(found);
+		return found;
 	}
 
 	public boolean isDead() {
-		return(dead);
+		return dead;
 	}
 
 	public static boolean nodeSearch(List<Node> arr, Node search) {
 		for (Node item : arr) {
-			if (item.equals(search)) return(true);
+			if (item.equals(search)) {
+				return true;
+			}
 		}
-		return(false);
+		return false;
 	}
 }
